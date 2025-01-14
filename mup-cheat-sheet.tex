@@ -1,0 +1,208 @@
+\documentclass{article}
+\usepackage[a4paper, top=0.25em, bottom=3.75em, left=2.5em, right=2.5em]{geometry}
+\usepackage{amsmath}  % align environment
+\usepackage{amsfonts}  % mathbb
+\usepackage{array}  % table formatting
+\usepackage{booktabs}  % top/mid/bottomrule
+\usepackage{nicefrac}
+\usepackage{colortbl} % For table cell background color
+\usepackage[table]{xcolor} % Extended color support
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{enumitem}  % [leftmargin=*]
+\usepackage{pifont} % Provides tick and cross symbols
+\usepackage{fancyhdr}  % header
+\pagestyle{fancy}  % header
+\pagenumbering{gobble}  % No page numbers
+
+\usepackage{etoolbox}
+
+% Patch to fix colortbl and amsmath conflict
+% Taken from: https://tex.stackexchange.com/questions/86211/colortbl-and-amsmath-conflict
+%%%%%%%%%% HERE COMES THE PATCH %%%%%%%%%%
+\makeatletter
+\pretocmd\start@align
+{%
+  \let\everycr\CT@everycr
+  \CT@start
+}{}{}
+\apptocmd{\endalign}{\CT@end}{}{}
+\makeatother
+%%%%%%%%%% END PATCH %%%%%%%%%%
+
+
+\renewcommand{\headrulewidth}{0pt}  % no header line
+\renewcommand{\footrulewidth}{0.4pt}  % footer line
+
+\fancyfoot[L]{Author: Charlie Blake, 2025}  % Left-aligned header
+\fancyfoot[R]{Contact: thecharlieblake @ gmail.com}  % Center-aligned header
+% \fancyfoot[R]{GitHub: TODO}  % Right-aligned header
+
+\definecolor{lightblue}{HTML}{a6cee3}
+\definecolor{darkblue}{HTML}{1f78b4}
+\definecolor{lightgreen}{HTML}{b2df8a}
+\definecolor{darkgreen}{HTML}{33a02c}
+\definecolor{lightorange}{HTML}{fdbf6f}
+\definecolor{darkorange}{HTML}{ff7f00}
+
+\newcommand{\timeseq}{\mathrel{\times}=}
+\newcommand{\divideeq}{\mathrel{\div}=}
+
+\newcommand{\tick}{\ding{51}}
+\newcommand{\cross}{\ding{55}}
+
+\begin{document}
+\begin{center}
+    \rule{20em}{0.001em}
+    \\
+    \vspace{1.5em}
+    {\Large The µP Cheat Sheet}
+    \vspace{0.5em}
+    \\
+    \rule{20em}{0.001em}
+    \vspace{-0.5em}
+\end{center}
+
+\subsection*{What is a parametrization?}
+
+A parametrization is a set of rules that determine the values of three types of hyperparameter (HP) in a model:
+
+\vspace{1em}
+\noindent
+\begin{tabular}{@{}p{19em}@{}p{3.5em}p{13em}p{13em}}  % Define column widths
+    \vspace{-1em}
+    \begin{enumerate}
+        \item parameter multipliers ($\alpha$)
+        \item initialization standard deviations ($\sigma$)
+        \item learning rates ($\eta$)
+    \end{enumerate}
+    &
+    \centering \vspace{1.4em} such that
+    &
+    \textit{for width-parametrizations}
+    \centering
+    \noindent
+    {\begin{align*}
+        W_t &= \alpha_W \cdot w_t\\
+        w_0 &= \mathcal{N}(0, \sigma_W^2)\\
+        w_{t+1} &= w_t - \eta_W \cdot [\textrm{update}]
+    \end{align*}}
+    &
+    \textit{for depth-parametrizations}
+    \centering
+    \noindent
+    {\begin{align*}
+        \mathrm{residual\text{-}block}(x) =\\
+            \alpha_{\mathrm{res}} \cdot f_{\mathrm{res}}(x) + x
+    \end{align*}}
+    and $\sigma_{\mathrm{res}}, \eta_{\mathrm{res}}$ apply to all $W$on the residual branch
+\end{tabular}
+
+\vspace{-0.5em}
+
+\noindent
+These rules are typically functions of the width ($d$) and/or layers ($\ell$) of the model.
+
+\vspace{0.5em}
+
+\noindent
+Rather than defining rules for individual $W$s, parameterizations tend to define rules according to three tensor types:
+
+\vspace{-1em}
+\noindent
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{@{}p{7em}@{}p{5em}p{5.5em}p{19em}}
+        \toprule
+        tensor type & fan-in($W$) & fan-out($W$) & example\\
+        \midrule
+        1. Input & $\Theta(1)$ & $\Theta(d)$ & encoder, embedding, bias, norm params\\
+        2. Hidden & $\Theta(d)$ & $\Theta(d)$ & linear layer, convolution\\
+        3. Output & $\Theta(d)$ & $\Theta(1)$ & decoder, readout\\
+        (Residual) & & & (any parameter tensor on a residual branch)\\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\vspace{-1.5em}
+
+\subsection*{Definitions of key parametrizations}
+
+The following table-pair captures important width-parametrizations from the literature. To derive a parametrization, select its column from the left table and take the entries from the right table of the corresponding color:
+
+\def\arraystretch{1.5}%  1 is the default, change whatever you need
+
+\setlength{\aboverulesep}{0pt} % Space above \rules
+\setlength{\belowrulesep}{0pt} % Space below \rules
+
+\vspace{1em}
+\noindent
+% \hspace{-1.25em}
+\begin{minipage}[t]{0.45\textwidth}
+    \centering
+    \begin{tabular}{ccccccc}
+        \toprule
+        Param. feature & SP & NTP-na & NTP-fa & µP-na & µP & u-µP \\
+        \midrule
+        down-scale $\eta_{\textrm{in}}$ & \textbf{n/a} & \cellcolor{lightblue}{\cross} & \cellcolor{lightblue}{\cross} & \cellcolor{lightblue}{\cross} & \cellcolor{lightblue}{\cross} & \cellcolor{darkblue}{\textcolor{white}{\tick}} \\
+        `full-alignment' & \textbf{n/a} & \cellcolor{lightgreen}{\cross} & \cellcolor{darkgreen}{\textcolor{white}{\tick}} & \cellcolor{lightgreen}{\cross} & \cellcolor{darkgreen}{\textcolor{white}{\tick}} & \cellcolor{darkgreen}{\textcolor{white}{\tick}} \\
+        down-scale $\sigma_{\textrm{out}}$ & \cellcolor{lightorange}{\cross} & \cellcolor{lightorange}{\cross} & \cellcolor{lightorange}{\cross} & \cellcolor{darkorange}{\textcolor{white}{\tick}} & \cellcolor{darkorange}{\textcolor{white}{\tick}} & \cellcolor{darkorange}{\textcolor{white}{\tick}} \\
+        \bottomrule
+    \end{tabular}
+\end{minipage}%
+\hspace{6em}
+\begin{minipage}[t]{0.45\textwidth}
+    \centering
+    \begin{tabular}{rcccccc}
+        \toprule
+        \multirow{2}{*}{HP\hspace{1.4em}} & \multicolumn{6}{c}{tensor type}\\ \cline{2-7}
+         & \multicolumn{2}{c}{input} & \multicolumn{2}{c}{hidden} & \multicolumn{2}{c}{output}\\
+        \midrule
+        $\sigma$ & \multicolumn{2}{c}{$1$} & \multicolumn{2}{c}{$\nicefrac{1}{\sqrt{d}}$} & \cellcolor{lightorange}$\nicefrac{1}{\sqrt{d}}$ & \cellcolor{darkorange}{\textcolor{white}{$\;\nicefrac{1}{d}\;$}} \\
+        (Adam) $\eta$ & \cellcolor{lightblue}{$\,\,\; 1 \,\,\;$} & \cellcolor{darkblue}{\textcolor{white}{$\nicefrac{1}{\sqrt{d}}$}} & \cellcolor{lightgreen}$\nicefrac{1}{\sqrt{d}}$ & \cellcolor{darkgreen}{\textcolor{white}{$\;\nicefrac{1}{d}\;$}} & \cellcolor{lightgreen}$\nicefrac{1}{\sqrt{d}}$ & \cellcolor{darkgreen}{\textcolor{white}{$\;\nicefrac{1}{d}\;$}} \\
+        \bottomrule
+    \end{tabular}
+\end{minipage}
+\vspace{0.75em}
+
+\noindent
+No values are given for $\alpha$s due to \textbf{abc-symmetry}, which states that models are invariant to changes of $\alpha, \sigma, \eta$ of the form $\alpha_W \timeseq \theta, \sigma_W \divideeq \theta, \eta_W \divideeq \theta$ for a given $W, \theta$. Different values of $\theta$ define different parametrizations in the same \textit{equivalence class}. $\theta$ is always chosen above such that $\alpha=1$ for the sake of comparison, though other forms are used in the literature (e.g. the Mean Field Parametrization [todo] is in the same equivalence class as µP, but usually presented differently). The only parametrization which specifies a preferred form is u-µP, which uses $\sigma=1$ for numerical stability. Also note that:
+
+\noindent
+\begin{multicols}{3} % Specify 3 columns
+    \begin{itemize}[leftmargin=*]
+        \item $\sigma, \eta$ are only \textit{proportional} to the values in the right table—the constant of proportionality is a tunable HP.
+        \item The above $\eta$s apply to all \textbf{optimizers} which guarantee $\Theta(1)$-sized updates (e.g. Adam, Shampoo, Muon). Table 1 of [todo] shows adjustments for other optimizers.
+        \item Standard Parametrization (\textbf{SP})'s rules for $\eta$ are presented inconsistently in the literature. Hence they are dropped entirely here.
+        \item \textbf{`fa/na'} denotes full/no-alignment assumptions from [todo]
+        \item The typical presentation of Neural Tangent Parametrization (\textbf{NTP}) is different to the one shown here (see Table 1 [tp4]) and has been shown to scale poorly. The `fa/na' variants use more appropriate $\eta$s.
+        \item \textbf{u-µP}'s down-scaled $\eta_{\textrm{in}}$ has only been validated on embedding-style input layers.
+    \end{itemize}
+\end{multicols}
+
+TODO: something on depth
+% depth
+
+\subsection*{F.A.Q.}
+\vspace{-1em}
+
+\noindent
+\begin{multicols}{3} % Start a three-column environment
+
+    \noindent
+    \textit{What are parametrizations trying to do?}\vspace{0.4em}\\
+    This is some text that will appear in the first column.\\
+    \columnbreak
+
+    \noindent
+    \textit{What parametrization should I use?}\vspace{0.4em}\\
+    This is text for the second column.\\
+    \columnbreak
+
+    \noindent
+    \textit{Any practical tips for applying this?}\vspace{0.4em}\\
+    This is text for the third column.
+    
+    \end{multicols}
+
+\end{document}
