@@ -9,6 +9,7 @@
 \usepackage[table]{xcolor} % Extended color support
 \usepackage{multirow}
 \usepackage{multicol}
+\usepackage{hyperref}
 \usepackage{enumitem}  % [leftmargin=*]
 \usepackage{pifont} % Provides tick and cross symbols
 \usepackage{fancyhdr}  % header
@@ -34,9 +35,9 @@
 \renewcommand{\headrulewidth}{0pt}  % no header line
 \renewcommand{\footrulewidth}{0.4pt}  % footer line
 
-\fancyfoot[L]{Author: Charlie Blake, 2025}  % Left-aligned header
-\fancyfoot[R]{Contact: thecharlieblake @ gmail.com}  % Center-aligned header
-% \fancyfoot[R]{GitHub: TODO}  % Right-aligned header
+\fancyfoot[L]{\small Charlie Blake, 2025}  % Left-aligned header
+\fancyfoot[C]{\small \href{https://github.com/thecharlieblake/mup-cheat-sheet}{github.com/thecharlieblake/mup-cheat-sheet}}  % Right-aligned header
+\fancyfoot[R]{\small thecharlieblake @ gmail.com}  % Center-aligned header
 
 \definecolor{lightblue}{HTML}{a6cee3}
 \definecolor{darkblue}{HTML}{1f78b4}
